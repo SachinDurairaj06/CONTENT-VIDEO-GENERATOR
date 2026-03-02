@@ -1,0 +1,6 @@
+TITAN:
+An error occurred (ValidationException) when calling the InvokeModel operation: Malformed input request: #/textToImageParams/text: expected minLength: 3, actual: 2, please reformat your input and try again.
+
+NOVA:
+An error occurred (ValidationException) when calling the InvokeModel operation: This action doesn't support the model that you provided. Try again with a supported text or chat model.
+

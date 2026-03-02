@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+  File "G:\ai for bharat\unified_flow\.venv\lib\site-packages\botocore\client.py", line 602, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "G:\ai for bharat\unified_flow\.venv\lib\site-packages\botocore\context.py", line 123, in wrapper
+    return func(*args, **kwargs)
+  File "G:\ai for bharat\unified_flow\.venv\lib\site-packages\botocore\client.py", line 1078, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.errorfactory.ValidationException: An error occurred (ValidationException) when calling the InvokeModel operation: Invocation of model ID anthropic.claude-sonnet-4-20250514-v1:0 with on-demand throughput isn’t supported. Retry your request with the ID or ARN of an inference profile that contains this model.
