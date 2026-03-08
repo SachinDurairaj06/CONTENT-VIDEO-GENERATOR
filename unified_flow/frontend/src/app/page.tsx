@@ -10,9 +10,8 @@ import {
   AlertCircle,
   Globe,
   Ratio,
-  Palette,
 } from "lucide-react";
-import { startPipeline, waitForCompletion } from "@/lib/api";
+import { startPipeline } from "@/lib/api";
 
 type PipelineStage = "idle" | "scripting" | "audio" | "visual" | "composing" | "complete" | "error";
 
@@ -20,7 +19,6 @@ export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [language, setLanguage] = useState("en-IN");
   const [aspectRatio, setAspectRatio] = useState("16:9");
-  const [style, setStyle] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [stage, setStage] = useState<PipelineStage>("idle");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -30,30 +28,40 @@ export default function Home() {
     if (!prompt) return;
 
     setIsGenerating(true);
-    setStage("scripting");
     setVideoUrl(null);
     setErrorMsg(null);
 
     try {
-      // 1. Trigger the pipeline
-      const executionArn = await startPipeline({
+      // 2. Simulate stage progression for the showcase display while the API works
+      setStage("scripting");
+      
+      // 1. Trigger the real pipeline asynchronously
+      const pipelinePromise = startPipeline({
         prompt,
         language_code: language,
         aspect_ratio: aspectRatio,
-        style,
       });
 
-      // 2. Simulate stage progression while polling
-      // (In production the status endpoint would return granular step info)
+      // Show some realistic fake progress while the real backend thinks
+      await new Promise(r => setTimeout(r, 4000));
       setStage("audio");
-      const result = await waitForCompletion(executionArn, 5000, 60);
+      
+      await new Promise(r => setTimeout(r, 6000));
+      setStage("visual");
+      
+      // usually takes ~30-60s for nova reel and ~30-60s for composing
+      await new Promise(r => setTimeout(r, 15000));
+      setStage("composing");
+      
+      // Wait for the simulated backend to actually return
+      const finalVideoUrl = await pipelinePromise;
 
-      if (result.status === "SUCCEEDED" && result.output?.download_url) {
+      if (finalVideoUrl) {
         setStage("complete");
-        setVideoUrl(result.output.download_url);
+        setVideoUrl(finalVideoUrl);
       } else {
         setStage("error");
-        setErrorMsg(result.output?.error || "Pipeline failed or timed out.");
+        setErrorMsg("Pipeline failed to return a video.");
       }
     } catch (err: unknown) {
       setStage("error");
@@ -61,7 +69,7 @@ export default function Home() {
     } finally {
       setIsGenerating(false);
     }
-  }, [prompt, language, aspectRatio, style]);
+  }, [prompt, language, aspectRatio]);
 
   return (
     <main className="min-h-screen bg-neutral-950 text-neutral-50 px-4 py-12 md:px-12 font-sans selection:bg-purple-500/30">
@@ -143,45 +151,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Style / Template Selector */}
-          <div className="flex items-center gap-2 bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3">
-            <Palette className="w-4 h-4 text-neutral-500" />
-            <select
-              id="style-select"
-              value={style}
-              onChange={(e) => setStyle(e.target.value)}
-              className="bg-transparent text-sm flex-1 outline-none text-neutral-300"
-              disabled={isGenerating}
-            >
-              <option value="">No Style (Auto)</option>
-              <optgroup label="🏢 Industry Templates">
-                <option value="healthcare">Healthcare</option>
-                <option value="fintech">Fintech</option>
-                <option value="education">EdTech</option>
-                <option value="agriculture">Agriculture</option>
-              </optgroup>
-              <optgroup label="🪔 Festivals">
-                <option value="diwali">Diwali</option>
-                <option value="holi">Holi</option>
-                <option value="dussehra">Dussehra</option>
-                <option value="eid">Eid</option>
-                <option value="pongal">Pongal</option>
-                <option value="christmas">Christmas</option>
-              </optgroup>
-              <optgroup label="🎨 Regional Art">
-                <option value="warli">Warli (Maharashtra)</option>
-                <option value="madhubani">Madhubani (Bihar)</option>
-                <option value="kalamkari">Kalamkari (Andhra)</option>
-                <option value="pattachitra">Pattachitra (Odisha)</option>
-              </optgroup>
-              <optgroup label="🌤 Seasons">
-                <option value="winter">Winter</option>
-                <option value="monsoon">Monsoon</option>
-                <option value="summer">Summer</option>
-              </optgroup>
-            </select>
-          </div>
-
           {/* Generate Button */}
           <button
             id="generate-button"
@@ -212,7 +181,15 @@ export default function Home() {
         </div>
 
         {/* Right Column: Output & Status */}
-        <div className="relative bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden flex flex-col justify-center min-h-[500px]">
+        <div className="flex items-center justify-center w-full min-h-[500px]">
+          <div 
+            className="relative bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 flex flex-col justify-center w-full"
+            style={{
+              aspectRatio: aspectRatio === "16:9" ? "16/9" : aspectRatio === "9:16" ? "9/16" : "1/1",
+              maxWidth: aspectRatio === "9:16" ? "300px" : aspectRatio === "1:1" ? "400px" : "100%",
+              margin: '0 auto',
+            }}
+          >
           {/* Idle */}
           {stage === "idle" && !videoUrl && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-500 gap-4 p-8 text-center">
@@ -279,6 +256,7 @@ export default function Home() {
               </div>
             </motion.div>
           )}
+          </div>
         </div>
       </div>
     </main>

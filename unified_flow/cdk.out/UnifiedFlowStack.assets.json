@@ -1,0 +1,104 @@
+{
+  "version": "50.0.0",
+  "files": {
+    "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6": {
+      "displayName": "UnifiedFlowStack/Custom::S3AutoDeleteObjectsCustomResourceProvider Code",
+      "source": {
+        "path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region-e31788a2": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "74e101899d7a00614fa414ac9bc3d1573d87797835b57574a1d740a7e11477ac": {
+      "displayName": "OrchestratorLayer/Code",
+      "source": {
+        "path": "asset.74e101899d7a00614fa414ac9bc3d1573d87797835b57574a1d740a7e11477ac",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region-986f27db": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "74e101899d7a00614fa414ac9bc3d1573d87797835b57574a1d740a7e11477ac.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "f33a3a729ba764831b10a3abf99d88cd5759c782b5c0da2e9a83932c2e74317d": {
+      "displayName": "AudioSynthLayer/Code",
+      "source": {
+        "path": "asset.f33a3a729ba764831b10a3abf99d88cd5759c782b5c0da2e9a83932c2e74317d",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region-0950ca62": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "f33a3a729ba764831b10a3abf99d88cd5759c782b5c0da2e9a83932c2e74317d.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "2a0b15aa33b22d535263d7f397a199ca0df72d7ee8acf021e01aa3b32d51eb7e": {
+      "displayName": "VisualGenLayer/Code",
+      "source": {
+        "path": "asset.2a0b15aa33b22d535263d7f397a199ca0df72d7ee8acf021e01aa3b32d51eb7e",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region-1dcbf934": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "2a0b15aa33b22d535263d7f397a199ca0df72d7ee8acf021e01aa3b32d51eb7e.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "ed83647f2113cd0af274c97acce816475343dfe92f4caf170427d6fbd1d26901": {
+      "displayName": "MediaComposerLayer/Code",
+      "source": {
+        "path": "asset.ed83647f2113cd0af274c97acce816475343dfe92f4caf170427d6fbd1d26901",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region-1dad6bc1": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "ed83647f2113cd0af274c97acce816475343dfe92f4caf170427d6fbd1d26901.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "2e8ba64f75801f86a10a0b1a3d4398d843f5653cef459cea655f2258f47ea67f": {
+      "displayName": "StatusPollerLayer/Code",
+      "source": {
+        "path": "asset.2e8ba64f75801f86a10a0b1a3d4398d843f5653cef459cea655f2258f47ea67f",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "current_account-current_region-56fbdb43": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "2e8ba64f75801f86a10a0b1a3d4398d843f5653cef459cea655f2258f47ea67f.zip",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    },
+    "f9f6844150333b58ec51a9edd3e1b3129bda918b825f9d0e8ded5e9678887577": {
+      "displayName": "UnifiedFlowStack Template",
+      "source": {
+        "path": "UnifiedFlowStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-current_region-861eace5": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "f9f6844150333b58ec51a9edd3e1b3129bda918b825f9d0e8ded5e9678887577.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

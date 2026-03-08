@@ -1,0 +1,1878 @@
+{
+ "Resources": {
+  "UnifiedFlowAssetsBucketB963A302": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "CorsConfiguration": {
+     "CorsRules": [
+      {
+       "AllowedHeaders": [
+        "*"
+       ],
+       "AllowedMethods": [
+        "GET",
+        "PUT",
+        "POST"
+       ],
+       "AllowedOrigins": [
+        "*"
+       ]
+      }
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "aws-cdk:auto-delete-objects",
+      "Value": "true"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowAssetsBucket/Resource"
+   }
+  },
+  "UnifiedFlowAssetsBucketPolicy3EC03F09": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "UnifiedFlowAssetsBucketB963A302"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:PutBucketPolicy"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::GetAtt": [
+          "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+          "Arn"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "UnifiedFlowAssetsBucketB963A302",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "UnifiedFlowAssetsBucketB963A302",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowAssetsBucket/Policy/Resource"
+   }
+  },
+  "UnifiedFlowAssetsBucketAutoDeleteObjectsCustomResourceA1921BE9": {
+   "Type": "Custom::S3AutoDeleteObjects",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+      "Arn"
+     ]
+    },
+    "BucketName": {
+     "Ref": "UnifiedFlowAssetsBucketB963A302"
+    }
+   },
+   "DependsOn": [
+    "UnifiedFlowAssetsBucketPolicy3EC03F09"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowAssetsBucket/AutoDeleteObjectsCustomResource/Default"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Version": "2012-10-17",
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ]
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip"
+    },
+    "Timeout": 900,
+    "MemorySize": 128,
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs22.x",
+    "Description": {
+     "Fn::Join": [
+      "",
+      [
+       "Lambda function for auto-deleting objects in ",
+       {
+        "Ref": "UnifiedFlowAssetsBucketB963A302"
+       },
+       " S3 bucket."
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
+    "aws:asset:path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+    "aws:asset:property": "Code"
+   }
+  },
+  "UnifiedFlowApi55B22FE3": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Description": "API to trigger the Unified Flow concept-to-render pipeline.",
+    "Name": "Unified Flow Service API"
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Resource"
+   }
+  },
+  "UnifiedFlowApiDeploymentC692AD8C3226a4aa0b4e4be1c0da368ddfc3154d": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "API to trigger the Unified Flow concept-to-render pipeline.",
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    }
+   },
+   "DependsOn": [
+    "UnifiedFlowApigenerateOPTIONSA9C7F3DC",
+    "UnifiedFlowApigeneratePOST27FC9F32",
+    "UnifiedFlowApigenerate81ED925E",
+    "UnifiedFlowApiOPTIONSB9B008C9",
+    "UnifiedFlowApistatusGET9089F747",
+    "UnifiedFlowApistatusOPTIONS344F148E",
+    "UnifiedFlowApistatusE1E09AFD"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Deployment/Resource",
+    "aws:cdk:do-not-refactor": true
+   }
+  },
+  "UnifiedFlowApiDeploymentStageprodE538E97A": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "UnifiedFlowApiDeploymentC692AD8C3226a4aa0b4e4be1c0da368ddfc3154d"
+    },
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    },
+    "StageName": "prod"
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/DeploymentStage.prod/Resource"
+   }
+  },
+  "UnifiedFlowApiOPTIONSB9B008C9": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Fn::GetAtt": [
+      "UnifiedFlowApi55B22FE3",
+      "RootResourceId"
+     ]
+    },
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/OPTIONS/Resource"
+   }
+  },
+  "UnifiedFlowApigenerate81ED925E": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "UnifiedFlowApi55B22FE3",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "generate",
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/generate/Resource"
+   }
+  },
+  "UnifiedFlowApigenerateOPTIONSA9C7F3DC": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "UnifiedFlowApigenerate81ED925E"
+    },
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/generate/OPTIONS/Resource"
+   }
+  },
+  "UnifiedFlowApigeneratePOST27FC9F32": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "Credentials": {
+      "Fn::GetAtt": [
+       "ApiGatewayStepFunctionsRole5BD62D0B",
+       "Arn"
+      ]
+     },
+     "IntegrationHttpMethod": "POST",
+     "IntegrationResponses": [
+      {
+       "ResponseTemplates": {
+        "application/json": "{\"status\": \"Pipeline started\", \"executionArn\": \"$input.path('$.executionArn')\"}"
+       },
+       "StatusCode": "200"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": {
+       "Fn::Join": [
+        "",
+        [
+         "{\"input\": \"$util.escapeJavaScript($input.json('$'))\", \"stateMachineArn\": \"",
+         {
+          "Ref": "UnifiedFlowPipeline8576D5D0"
+         },
+         "\"}"
+        ]
+       ]
+      }
+     },
+     "Type": "AWS",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":states:action/StartExecution"
+       ]
+      ]
+     }
+    },
+    "MethodResponses": [
+     {
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "UnifiedFlowApigenerate81ED925E"
+    },
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/generate/POST/Resource"
+   }
+  },
+  "UnifiedFlowApistatusE1E09AFD": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "UnifiedFlowApi55B22FE3",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "status",
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/status/Resource"
+   }
+  },
+  "UnifiedFlowApistatusOPTIONS344F148E": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "UnifiedFlowApistatusE1E09AFD"
+    },
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/status/OPTIONS/Resource"
+   }
+  },
+  "UnifiedFlowApistatusGETApiPermissionUnifiedFlowStackUnifiedFlowApi4D64B750GETstatusCDD977E7": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StatusPollerLayer5B0AF4B0",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "UnifiedFlowApi55B22FE3"
+       },
+       "/",
+       {
+        "Ref": "UnifiedFlowApiDeploymentStageprodE538E97A"
+       },
+       "/GET/status"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/status/GET/ApiPermission.UnifiedFlowStackUnifiedFlowApi4D64B750.GET..status"
+   }
+  },
+  "UnifiedFlowApistatusGETApiPermissionTestUnifiedFlowStackUnifiedFlowApi4D64B750GETstatus8F81884E": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "StatusPollerLayer5B0AF4B0",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "UnifiedFlowApi55B22FE3"
+       },
+       "/test-invoke-stage/GET/status"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/status/GET/ApiPermission.Test.UnifiedFlowStackUnifiedFlowApi4D64B750.GET..status"
+   }
+  },
+  "UnifiedFlowApistatusGET9089F747": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "StatusPollerLayer5B0AF4B0",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "MethodResponses": [
+     {
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "UnifiedFlowApistatusE1E09AFD"
+    },
+    "RestApiId": {
+     "Ref": "UnifiedFlowApi55B22FE3"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowApi/Default/status/GET/Resource"
+   }
+  },
+  "OrchestratorLayerServiceRole6C6E95E3": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/OrchestratorLayer/ServiceRole/Resource"
+   }
+  },
+  "OrchestratorLayerServiceRoleDefaultPolicy037F1F2B": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:StartAsyncInvoke"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "OrchestratorLayerServiceRoleDefaultPolicy037F1F2B",
+    "Roles": [
+     {
+      "Ref": "OrchestratorLayerServiceRole6C6E95E3"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/OrchestratorLayer/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "OrchestratorLayer39B8A137": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "74e101899d7a00614fa414ac9bc3d1573d87797835b57574a1d740a7e11477ac.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "ASSETS_BUCKET": {
+       "Ref": "UnifiedFlowAssetsBucketB963A302"
+      },
+      "GUARDRAIL_ID": "unified-flow-guardrail"
+     }
+    },
+    "Handler": "app.lambda_handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "OrchestratorLayerServiceRole6C6E95E3",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.11",
+    "Timeout": 60
+   },
+   "DependsOn": [
+    "OrchestratorLayerServiceRoleDefaultPolicy037F1F2B",
+    "OrchestratorLayerServiceRole6C6E95E3"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/OrchestratorLayer/Resource",
+    "aws:asset:path": "asset.74e101899d7a00614fa414ac9bc3d1573d87797835b57574a1d740a7e11477ac",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "OrchestratorLayerLogGroup28CE1641": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "OrchestratorLayer39B8A137"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 731
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/OrchestratorLayer/LogGroup/Resource"
+   }
+  },
+  "AudioSynthLayerServiceRole014BEC8F": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/AudioSynthLayer/ServiceRole/Resource"
+   }
+  },
+  "AudioSynthLayerServiceRoleDefaultPolicy4932484D": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "UnifiedFlowAssetsBucketB963A302",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "UnifiedFlowAssetsBucketB963A302",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "polly:SynthesizeSpeech",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AudioSynthLayerServiceRoleDefaultPolicy4932484D",
+    "Roles": [
+     {
+      "Ref": "AudioSynthLayerServiceRole014BEC8F"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/AudioSynthLayer/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "AudioSynthLayer05540DA0": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "f33a3a729ba764831b10a3abf99d88cd5759c782b5c0da2e9a83932c2e74317d.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "ASSETS_BUCKET": {
+       "Ref": "UnifiedFlowAssetsBucketB963A302"
+      }
+     }
+    },
+    "Handler": "app.lambda_handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "AudioSynthLayerServiceRole014BEC8F",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.11",
+    "Timeout": 60
+   },
+   "DependsOn": [
+    "AudioSynthLayerServiceRoleDefaultPolicy4932484D",
+    "AudioSynthLayerServiceRole014BEC8F"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/AudioSynthLayer/Resource",
+    "aws:asset:path": "asset.f33a3a729ba764831b10a3abf99d88cd5759c782b5c0da2e9a83932c2e74317d",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "AudioSynthLayerLogGroupDE9D5F60": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "AudioSynthLayer05540DA0"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 731
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/AudioSynthLayer/LogGroup/Resource"
+   }
+  },
+  "VisualGenLayerServiceRole404BBCF5": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/VisualGenLayer/ServiceRole/Resource"
+   }
+  },
+  "VisualGenLayerServiceRoleDefaultPolicyA635FB47": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "UnifiedFlowAssetsBucketB963A302",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "UnifiedFlowAssetsBucketB963A302",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:StartAsyncInvoke"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "VisualGenLayerServiceRoleDefaultPolicyA635FB47",
+    "Roles": [
+     {
+      "Ref": "VisualGenLayerServiceRole404BBCF5"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/VisualGenLayer/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "VisualGenLayer9F9B50CE": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "2a0b15aa33b22d535263d7f397a199ca0df72d7ee8acf021e01aa3b32d51eb7e.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "ASSETS_BUCKET": {
+       "Ref": "UnifiedFlowAssetsBucketB963A302"
+      }
+     }
+    },
+    "Handler": "app.lambda_handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "VisualGenLayerServiceRole404BBCF5",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.11",
+    "Timeout": 120
+   },
+   "DependsOn": [
+    "VisualGenLayerServiceRoleDefaultPolicyA635FB47",
+    "VisualGenLayerServiceRole404BBCF5"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/VisualGenLayer/Resource",
+    "aws:asset:path": "asset.2a0b15aa33b22d535263d7f397a199ca0df72d7ee8acf021e01aa3b32d51eb7e",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "VisualGenLayerLogGroup535CBAB7": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "VisualGenLayer9F9B50CE"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 731
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/VisualGenLayer/LogGroup/Resource"
+   }
+  },
+  "MediaComposerLayerServiceRole40A1D8EA": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/MediaComposerLayer/ServiceRole/Resource"
+   }
+  },
+  "MediaComposerLayerServiceRoleDefaultPolicyDE50505C": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "UnifiedFlowAssetsBucketB963A302",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "UnifiedFlowAssetsBucketB963A302",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "MediaComposerLayerServiceRoleDefaultPolicyDE50505C",
+    "Roles": [
+     {
+      "Ref": "MediaComposerLayerServiceRole40A1D8EA"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/MediaComposerLayer/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "MediaComposerLayer342A8F60": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "ed83647f2113cd0af274c97acce816475343dfe92f4caf170427d6fbd1d26901.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "ASSETS_BUCKET": {
+       "Ref": "UnifiedFlowAssetsBucketB963A302"
+      }
+     }
+    },
+    "Handler": "app.lambda_handler",
+    "MemorySize": 1024,
+    "Role": {
+     "Fn::GetAtt": [
+      "MediaComposerLayerServiceRole40A1D8EA",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.11",
+    "Timeout": 300
+   },
+   "DependsOn": [
+    "MediaComposerLayerServiceRoleDefaultPolicyDE50505C",
+    "MediaComposerLayerServiceRole40A1D8EA"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/MediaComposerLayer/Resource",
+    "aws:asset:path": "asset.ed83647f2113cd0af274c97acce816475343dfe92f4caf170427d6fbd1d26901",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "MediaComposerLayerLogGroup05B8995F": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "MediaComposerLayer342A8F60"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 731
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/MediaComposerLayer/LogGroup/Resource"
+   }
+  },
+  "UnifiedFlowPipelineRole69F497D3": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "states.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowPipeline/Role/Resource"
+   }
+  },
+  "UnifiedFlowPipelineRoleDefaultPolicyE67BC809": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "AudioSynthLayer05540DA0",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::GetAtt": [
+          "MediaComposerLayer342A8F60",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::GetAtt": [
+          "OrchestratorLayer39B8A137",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::GetAtt": [
+          "VisualGenLayer9F9B50CE",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "AudioSynthLayer05540DA0",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "MediaComposerLayer342A8F60",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "OrchestratorLayer39B8A137",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "VisualGenLayer9F9B50CE",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "UnifiedFlowPipelineRoleDefaultPolicyE67BC809",
+    "Roles": [
+     {
+      "Ref": "UnifiedFlowPipelineRole69F497D3"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowPipeline/Role/DefaultPolicy/Resource"
+   }
+  },
+  "UnifiedFlowPipeline8576D5D0": {
+   "Type": "AWS::StepFunctions::StateMachine",
+   "Properties": {
+    "DefinitionString": {
+     "Fn::Join": [
+      "",
+      [
+       "{\"StartAt\":\"Generate Manifest via Claude\",\"States\":{\"Generate Manifest via Claude\":{\"Next\":\"Parallel Asset Generation\",\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.Payload.body\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "OrchestratorLayer39B8A137",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}},\"Parallel Asset Generation\":{\"Type\":\"Parallel\",\"Next\":\"Compose Final MP4 (FFmpeg)\",\"Branches\":[{\"StartAt\":\"Synthesize Audio & Visemes (Polly)\",\"States\":{\"Synthesize Audio & Visemes (Polly)\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.Payload\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "AudioSynthLayer05540DA0",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}}}},{\"StartAt\":\"Start Visual Gen Jobs (Titan+Nova)\",\"States\":{\"Start Visual Gen Jobs (Titan+Nova)\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.Payload\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "VisualGenLayer9F9B50CE",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}}}}]},\"Compose Final MP4 (FFmpeg)\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.Payload\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "MediaComposerLayer342A8F60",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}}},\"TimeoutSeconds\":900}"
+      ]
+     ]
+    },
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "UnifiedFlowPipelineRole69F497D3",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "UnifiedFlowPipelineRoleDefaultPolicyE67BC809",
+    "UnifiedFlowPipelineRole69F497D3"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/UnifiedFlowPipeline/Resource"
+   }
+  },
+  "ApiGatewayStepFunctionsRole5BD62D0B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "apigateway.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/ApiGatewayStepFunctionsRole/Resource"
+   }
+  },
+  "ApiGatewayStepFunctionsRoleDefaultPolicyEC77EF82": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "states:StartExecution",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "UnifiedFlowPipeline8576D5D0"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ApiGatewayStepFunctionsRoleDefaultPolicyEC77EF82",
+    "Roles": [
+     {
+      "Ref": "ApiGatewayStepFunctionsRole5BD62D0B"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/ApiGatewayStepFunctionsRole/DefaultPolicy/Resource"
+   }
+  },
+  "StatusPollerLayerServiceRoleE0A27442": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/StatusPollerLayer/ServiceRole/Resource"
+   }
+  },
+  "StatusPollerLayerServiceRoleDefaultPolicyD73FDC67": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "states:DescribeExecution",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "UnifiedFlowPipeline8576D5D0"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "StatusPollerLayerServiceRoleDefaultPolicyD73FDC67",
+    "Roles": [
+     {
+      "Ref": "StatusPollerLayerServiceRoleE0A27442"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/StatusPollerLayer/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "StatusPollerLayer5B0AF4B0": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "2e8ba64f75801f86a10a0b1a3d4398d843f5653cef459cea655f2258f47ea67f.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "ASSETS_BUCKET": {
+       "Ref": "UnifiedFlowAssetsBucketB963A302"
+      }
+     }
+    },
+    "Handler": "app.lambda_handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "StatusPollerLayerServiceRoleE0A27442",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.11",
+    "Timeout": 10
+   },
+   "DependsOn": [
+    "StatusPollerLayerServiceRoleDefaultPolicyD73FDC67",
+    "StatusPollerLayerServiceRoleE0A27442"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/StatusPollerLayer/Resource",
+    "aws:asset:path": "asset.2e8ba64f75801f86a10a0b1a3d4398d843f5653cef459cea655f2258f47ea67f",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "StatusPollerLayerLogGroupE3AC3B13": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "StatusPollerLayer5B0AF4B0"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 731
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/StatusPollerLayer/LogGroup/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/+1YTXPbOAz9LeWxw6hJsyffHPcrs8naY7snjyeDiLDMmiK1JJSMqtF/75CUZKXtZtvdpo07uVgWAIIPjyAE8mXy8o/j5PgZ3LqjVOyOlLxO6gVBuuNw665qd5rUZ2W6Q1rVDEoyr1Ah4fT6A6bk2IhsiZylxjo28hZKmVsUl0hbI7yIvX29ZJzN3off6WLJ1ryzmlqZSe3YiD1nvfAdgkAbhc2aM4u5uQE1M0qmFRsxgY6sqVjDawZCTIx181LhQ8zOg+Y5WzdrPtnoSAOPj4hnVbPr8NrB7c2ivjU+A4cNh0JmQHgLVVLP0dG4kKuaCdxAqcjHMbO4UTLb0rQgaTy0NqSvQO1jjEAFutTKMKy1snGGvyDHAbh2Xv4KC2WqHDUFCJ8PhkL2bgik3pt3Mwbyl+bCZDIFdS48/8360clD0Hv0fEGQYQi5Ew3ICUo+R2dKm6JftJVffR65XtWe06BqudkSFVHXCqQmzCwMiDSDlSxpa6z8iPbu23k3uhOF8cuqwG5xoZB/YjXHv0tpUbDRBpTDf7LnLA+Q5ugKox3GfekIqHQTI3CfHkE9Aws50n7HNS2Xl3e8fK8T/kTWzyPrG2L4HqhPy3foyxeqWbTsy9mqZgXYruBxVgBtZ2Cpr+f3aLtPR3DUcAX5tYCknmz0DG0unZNG8zelTn1Mq5qhvpHW6Hzvj2SOpuze0j2tW9BC+TSJJJfaWw6/Ma+Hvlb9F/nflD8Hwq+aJcfc2GohP+JhBxcSq0uchkvIk3pulE9WcK7MUZxVfosUVupUFqDGaWrKHk+08QPGab+3Gs5y0JChCD2YbHfUUFaNrR7s3tA5zLopuk6z7yuIIN2eayU19ro+B+9V/gYh3O/3KcDHH+B/DuEX0v5/tI8z3gNPpNgBGIW8Pfh6xN2ApfGaL/x8KRZiQUDYniMjpB/m6ND9PzTQAw8rZGBMvoa70ytwDsklY//gymQuqS9M9taasljVTLV/99cf/AGEAVM3a8MdYbFpmxl3ReB2LrkIvfK5vjE7vGuQ1P4ooRQqHoK9hHQrdbyc2EgtYwmomewOEY7AUjBtBagjTf0t0LA/60uB5/arJfQHKLprkx590/BJ6cjk/bEj3KAMjg+f6WfW3EiB1t+28LCY/hZG6syPmZZUlNTwWUVbo1+cJifHycnJsw9OyqO2yUzm8fkJZKi2f8gUAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "UnifiedFlowStack/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "UnifiedFlowApiEndpoint44892449": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "UnifiedFlowApi55B22FE3"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "UnifiedFlowApiDeploymentStageprodE538E97A"
+      },
+      "/"
+     ]
+    ]
+   }
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

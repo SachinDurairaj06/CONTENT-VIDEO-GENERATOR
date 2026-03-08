@@ -1,9 +1,7 @@
 /**
  * Unified Flow API Service
- * Handles communication with the AWS API Gateway / Step Functions backend.
+ * Handles communication with the local backend.
  */
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://YOUR_API_GATEWAY_URL";
 
 export interface GenerateRequest {
     prompt: string;
@@ -22,61 +20,52 @@ export interface PipelineStatus {
 }
 
 /**
- * Triggers the Unified Flow pipeline by sending a POST to API Gateway,
- * which starts the Step Functions state machine.
+ * Calls the local Next.js API endpoint to trigger the python script.
  */
 export async function startPipeline(request: GenerateRequest): Promise<string> {
-    const response = await fetch(`${API_BASE_URL}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            prompt: request.prompt,
-            style: request.style,
-            language_code: request.language_code,
-            aspect_ratio: request.aspect_ratio,
-        }),
+    console.log("[API] Starting pipeline with request:", request);
+    
+    // We will wait for the whole pipeline to finish in trigger, to keep it simple locally
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request)
     });
-
+    
     if (!response.ok) {
-        throw new Error(`Pipeline trigger failed: ${response.statusText}`);
+        let errStr = response.statusText;
+        try {
+            const errData = await response.json();
+            if (errData.error) errStr = errData.error;
+        } catch (e) {
+            // response wasn't JSON
+        }
+        throw new Error(`API error: ${errStr}`);
     }
-
+    
     const data = await response.json();
-    return data.executionArn; // Used to poll status
-}
-
-/**
- * Polls the execution status of a running Step Functions pipeline.
- * In production, this would hit a /status?executionArn=... endpoint
- * backed by a Lambda that calls DescribeExecution.
- */
-export async function getPipelineStatus(executionArn: string): Promise<PipelineStatus> {
-    const response = await fetch(
-        `${API_BASE_URL}/status?executionArn=${encodeURIComponent(executionArn)}`
-    );
-
-    if (!response.ok) {
-        throw new Error(`Status check failed: ${response.statusText}`);
+    if (data.error) {
+        throw new Error(data.error);
     }
-
-    return response.json();
+    
+    // We get the final video url directly to keep it simple since it's local
+    return data.video_url || data.local_url;
 }
 
 /**
- * Utility: polls until the pipeline is no longer RUNNING.
- * Returns the final status.
+ * Returns the completion status. Since startPipeline now blocks until completion, this just returns success.
  */
 export async function waitForCompletion(
-    executionArn: string,
+    executionArn: string, // the returned string from startPipeline is actually the video url now
     intervalMs: number = 5000,
-    maxAttempts: number = 60
+    maxAttempts: number = 2
 ): Promise<PipelineStatus> {
-    for (let i = 0; i < maxAttempts; i++) {
-        const status = await getPipelineStatus(executionArn);
-        if (status.status !== "RUNNING") {
-            return status;
+    return { 
+        status: "SUCCEEDED",
+        output: {
+            download_url: executionArn
         }
-        await new Promise((resolve) => setTimeout(resolve, intervalMs));
-    }
-    return { status: "TIMED_OUT" };
+    };
 }

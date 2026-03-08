@@ -1,10 +1,36 @@
-*.swp
-package-lock.json
-__pycache__
-.pytest_cache
-.venv
-*.egg-info
+# Python
+__pycache__/
+.venv/
+*.py[cod]
+*$py.class
+dist/
+build/
+*.egg-info/
+.env
+.env.local
+.env.*.local
 
-# CDK asset staging directory
-.cdk.staging
-cdk.out
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/public/videos/*
+!frontend/public/videos/.gitkeep
+
+# Project outputs
+output/
+tmp_edit/
+*.log
+*.txt
+out*.txt
+tmp*.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Media
+*.mp4
+*.mp3
+*.png
+*.jpg
+!test_keyframe.png
