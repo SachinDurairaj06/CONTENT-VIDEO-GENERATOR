@@ -23,10 +23,12 @@ export interface PipelineStatus {
  * Calls the local Next.js API endpoint to trigger the python script.
  */
 export async function startPipeline(request: GenerateRequest): Promise<string> {
-    console.log("[API] Starting pipeline with request:", request);
+    // Use custom backend URL if provided, otherwise fallback to local relative route
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+    const endpoint = backendUrl ? `${backendUrl}/generate` : '/api/generate';
     
     // We will wait for the whole pipeline to finish in trigger, to keep it simple locally
-    const response = await fetch('/api/generate', {
+    const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
